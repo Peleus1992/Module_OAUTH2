@@ -1,0 +1,51 @@
+{
+  "project_info": {
+    "project_id": "module-oauth2",
+    "project_number": "762868738960",
+    "name": "Module OAUTH2"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762868738960:android:aa845f6fa38a1a44",
+        "client_id": "android:edu.gatech.wguo64.module_oauth2",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "edu.gatech.wguo64.module_oauth2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "762868738960-jp1tvm5htki7lem84rt9em9vvebah9rh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "edu.gatech.wguo64.module_oauth2",
+            "certificate_hash": "E724D630E67A3B17D2BF695CA09F4BC450D437A4"
+          }
+        }
+      ],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "cloud_messaging_service": {
+          "status": 2,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 2
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "client_info": [],
+  "ARTIFACT_VERSION": "1"
+}

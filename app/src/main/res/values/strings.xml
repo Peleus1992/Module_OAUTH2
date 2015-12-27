@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Module_OAUTH2</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="sign_in_failure">Sorry, connection is bad!</string>
+</resources>
