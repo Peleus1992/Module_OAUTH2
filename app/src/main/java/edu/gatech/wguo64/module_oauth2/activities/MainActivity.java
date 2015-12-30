@@ -37,31 +37,48 @@ import edu.gatech.wguo64.module_oauth2.utilities.RoundImage;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener
         , ResultCallback
         , View.OnClickListener {
+    /**
+     * googleApiClient: used to sign in and out Google Account.
+     */
     private GoogleApiClient googleApiClient;
-
-    private Button signOutBtn, notifyBtn, addBtn, showBtn, moreBtn, clearBtn;
+    /**
+     * Declare all widgets.
+     */
+    public Button signOutBtn, notifyBtn, addBtn, showBtn, moreBtn, clearBtn;
     public ImageView photoImg;
     public TextView emailTxt, messageTxt;
     public EditText productEdit, priceEdit;
-
+    /**
+     * TAG: used in Log.d().
+     */
     public final static String TAG = "MainActivity";
+    /**
+     * preferences: Store user-related static data.
+     * These data dies with application itself.
+     */
     private SharedPreferences preferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        /**
+         * Preferences
+         */
         preferences = getSharedPreferences(Constants.PREFERENCE, MODE_PRIVATE);
-
+        /**
+         * Build GoogleApiClient.
+         */
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .requestId()
                 .build();
-
         googleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-
+        /**
+         * Widgets initialization
+         */
         signOutBtn = (Button)findViewById(R.id.sign_out_btn);
         signOutBtn.setOnClickListener(this);
         notifyBtn = (Button)findViewById(R.id.notify_btn);
@@ -76,40 +93,67 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         clearBtn.setOnClickListener(this);
 
         photoImg = (ImageView)findViewById(R.id.photo_img);
+
         emailTxt = (TextView)findViewById(R.id.email_txt);
         messageTxt = (TextView)findViewById(R.id.message_txt);
         messageTxt.setMovementMethod(new ScrollingMovementMethod());
 
         productEdit = (EditText)findViewById(R.id.product_edit);
         priceEdit = (EditText)findViewById(R.id.price_edit);
-
+        /**
+         * Get credential and initialize backend api.
+         */
         GoogleAccountCredential credential = GoogleAccountCredential
                 .usingAudience(this,
                         "server:client_id:" + Constants.WEB_CLIENT_ID);
         credential.setSelectedAccountName(preferences.getString(Constants.PREFERENCE_ACCOUNT_EMAIL, null));
         Api.initialize(credential);
+        /**
+         * Update UI including user email and user photo.
+         */
         updateUI();
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            /**
+             * Sign out of Google Account. Then finish this activity and
+             * return back to previous activity.
+             */
             case R.id.sign_out_btn:
                 if(googleApiClient.isConnected()) {
                     Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(this);
                 }
                 break;
+            /**
+             * Send a http request to backend which then sends message to
+             * GCM Server which sends message to the device.
+             */
             case R.id.notify_btn:
                 break;
+            /**
+             * Add the Product entity to database by calling backend api.
+             */
             case R.id.add_btn:
                 submitProduct();
                 break;
+            /**
+             * Show first 5 Product entities in the MessageEdit.
+             */
             case R.id.show_btn:
                 listProducts(true);
                 break;
+            /**
+             * Show next 5 (less than 5 iff at the end of list) Product
+             * entities in the MessageEdit
+             */
             case R.id.more_btn:
                 listProducts(false);
                 break;
+            /**
+             * Clear MessageEdit.
+             */
             case R.id.clear_btn:
                 messageTxt.setText("");
                 break;
@@ -129,11 +173,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     }
 
     private void updateUI() {
-        // Update account email address
+        /*
+         * Update account email address
+         */
         emailTxt.setText(preferences.getString(Constants.PREFERENCE_ACCOUNT_EMAIL, "NULL"));
-        // Update account photo.
-        // We use AsyncTask because we only have photo url and we need download
-        // which should not be in UI thread.
+        /**
+         * Update account photo.
+         * We use AsyncTask because we only have photo url and we need download
+         * which should not be in UI thread.
+         */
         new AsyncTask<String, Void, Bitmap>() {
             @Override
             protected Bitmap doInBackground(String... params) {
@@ -161,6 +209,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
             }
         }.execute(preferences.getString(Constants.PREFERENCE_ACCOUNT_PHOTO_URL, "NULL"));
     }
+
+    /**
+     * Check whether product name and product price are valid.
+     * @return null or product to be submitted.
+     */
     private Product getProduct() {
         if("".equals(productEdit.getText().toString()) ||
                 "".equals(priceEdit.getText().toString())) {
@@ -177,6 +230,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         return product;
     }
 
+    /**
+     * Submit Product entity by calling backend api insert.
+     */
     private void submitProduct() {
         Product product = null;
         if((product = getProduct()) != null) {
@@ -213,8 +269,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         }
     }
 
+    /**
+     * cursor: used to get next 5 Product entities by
+     * using Query<Product>.startAt(Cursor)
+     * count: used to count the total number of returned entities
+     */
     private static String cursor = null;
     private static int count = 0;
+
+    /**
+     * List Product entities in datastore.
+     * @param fromStart: true: show the first 5 entities;
+     *                 false show following 5 entities.
+     */
     private void listProducts(boolean fromStart) {
         if(cursor != null && fromStart) {
             cursor = null;
