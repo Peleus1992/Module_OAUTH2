@@ -1,4 +1,4 @@
-package edu.gatech.wguo64.module_oauth2.backend.constants;
+package edu.gatech.wguo64.module_oauth2.backend.utities;
 
 /**
  * Created by guoweidong on 12/28/15.

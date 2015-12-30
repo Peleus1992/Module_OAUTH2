@@ -101,7 +101,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString(Constants.PREFERENCE_ACCOUNT_EMAIL, account.getEmail())
                     .putString(Constants.PREFERENCE_ACCOUNT_ID, account.getId())
-                    .putString(Constants.PREFERENCE_ACCOUNT_PHOTO_URL, account.getPhotoUrl().toString())
+                    .putString(Constants.PREFERENCE_ACCOUNT_PHOTO_URL,
+                            account.getPhotoUrl() == null ? null : account.getPhotoUrl().toString())
                     .apply();
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);

@@ -1,5 +1,6 @@
 package edu.gatech.wguo64.module_oauth2.activities;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Result;
 import com.google.android.gms.common.api.ResultCallback;
@@ -30,6 +32,7 @@ import java.util.List;
 import edu.gatech.wguo64.module_oauth2.R;
 import edu.gatech.wguo64.module_oauth2.backend.myApi.model.CollectionResponseProduct;
 import edu.gatech.wguo64.module_oauth2.backend.myApi.model.Product;
+import edu.gatech.wguo64.module_oauth2.notification.RegistrationIntentService;
 import edu.gatech.wguo64.module_oauth2.utilities.Api;
 import edu.gatech.wguo64.module_oauth2.utilities.Constants;
 import edu.gatech.wguo64.module_oauth2.utilities.RoundImage;
@@ -57,6 +60,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
      * These data dies with application itself.
      */
     private SharedPreferences preferences;
+
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9010;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,6 +114,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
         credential.setSelectedAccountName(preferences.getString(Constants.PREFERENCE_ACCOUNT_EMAIL, null));
         Api.initialize(credential);
         /**
+         * Start
+         */
+        if (checkPlayServices()) {
+            // Start IntentService to register this application with GCM.
+            Intent intent = new Intent(this, RegistrationIntentService.class);
+            startService(intent);
+        }
+        /**
          * Update UI including user email and user photo.
          */
         updateUI();
@@ -131,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
              * GCM Server which sends message to the device.
              */
             case R.id.notify_btn:
+                testNotify();
                 break;
             /**
              * Add the Product entity to database by calling backend api.
@@ -319,6 +333,41 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
                                 + product.getPrice() + "\n");
                     }
                 }
+            }
+        }.execute();
+    }
+
+    /**
+     * Check the device to make sure it has the Google Play Services APK. If
+     * it doesn't, display a dialog that allows users to download the APK from
+     * the Google Play Store or enable it in the device's system settings.
+     */
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+                        .show();
+            } else {
+                Log.d(TAG, "This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private void testNotify() {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    Api.getApi().product().test().execute();
+                } catch (Exception e) {
+                    Log.d(TAG, "testNotify: " + e.getLocalizedMessage());
+                }
+                return null;
             }
         }.execute();
     }

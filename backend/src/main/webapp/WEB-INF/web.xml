@@ -5,7 +5,7 @@
         <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
         <init-param>
             <param-name>services</param-name>
-            <param-value>edu.gatech.wguo64.module_oauth2.backend.endpoints.MyEndpoint,
+            <param-value> edu.gatech.wguo64.module_oauth2.backend.endpoints.TokenEndpoint,
                 edu.gatech.wguo64.module_oauth2.backend.endpoints.ProductEndpoint</param-value>
         </init-param>
     </servlet>

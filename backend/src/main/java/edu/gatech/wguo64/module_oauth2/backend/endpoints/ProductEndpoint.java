@@ -11,6 +11,10 @@ import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.oauth.OAuthRequestException;
+import com.google.appengine.api.taskqueue.DeferredTask;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
 import com.google.appengine.api.users.User;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.ObjectifyService;
@@ -18,11 +22,15 @@ import com.googlecode.objectify.cmd.Query;
 
 import static com.googlecode.objectify.ObjectifyService.ofy;
 
-import edu.gatech.wguo64.module_oauth2.backend.constants.Constants;
+import edu.gatech.wguo64.module_oauth2.backend.entities.Token;
+import edu.gatech.wguo64.module_oauth2.backend.utities.Constants;
 import edu.gatech.wguo64.module_oauth2.backend.entities.Product;
+import edu.gatech.wguo64.module_oauth2.backend.utities.NotificationHelper;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 /**
  * Created by guoweidong on 12/29/15.
@@ -50,8 +58,13 @@ public class ProductEndpoint {
             name = "product.test",
             path = "product/test",
             httpMethod = ApiMethod.HttpMethod.GET)
-    public Product test() {
-        return new Product("test", 0);
+    public void test() {
+        QueryResultIterator<Token> iterator = ofy().load().type(Token.class).chunkAll().iterator();
+        Set<String> userIds = new HashSet<>();
+        while(iterator.hasNext()) {
+            userIds.add(iterator.next().getUserId());
+        }
+        NotificationHelper.notify(userIds, "Just for test");
     }
 
     @ApiMethod(
@@ -73,6 +86,17 @@ public class ProductEndpoint {
         Map<Key<Product>, Product> map = ofy().save().entities(product).now();
         if(map != null) {
             Key<Product> key = map.keySet().iterator().next();
+            if(ofy().load().type(Product.class).count() % 5 == 0) {
+//                Queue queue = QueueFactory.getQueue(ProductEndpoint.class.getName());
+//                queue.add(TaskOptions.Builder.withPayload
+//                        (new UpdateNotifyDeferredTask()));
+                QueryResultIterator<Token> iterator = ofy().load().type(Token.class).chunkAll().iterator();
+                Set<String> userIds = new HashSet<>();
+                while(iterator.hasNext()) {
+                    userIds.add(iterator.next().getUserId());
+                }
+                NotificationHelper.notify(userIds, "5 more products have been added");
+            }
             return ofy().load().key(key).now();
         }
         return null;
@@ -101,5 +125,21 @@ public class ProductEndpoint {
             res.add(iterator.next());
         }
         return CollectionResponse.<Product>builder().setNextPageToken(iterator.getCursor().toWebSafeString()).setItems(res).build();
+    }
+
+    private static class UpdateNotifyDeferredTask implements DeferredTask {
+        public UpdateNotifyDeferredTask() {
+            super();
+        }
+
+        @Override
+        public void run() {
+            QueryResultIterator<Token> iterator = ofy().load().type(Token.class).chunkAll().iterator();
+            Set<String> userIds = new HashSet<>();
+            while(iterator.hasNext()) {
+                userIds.add(iterator.next().getUserId());
+            }
+            NotificationHelper.notify(userIds, "5 more products have been added");
+        }
     }
 }
