@@ -1,8 +1,7 @@
-package edu.gatech.wguo64.module_oauth2;
+package edu.gatech.wguo64.module_oauth2.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,6 +16,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import edu.gatech.wguo64.module_oauth2.R;
 import edu.gatech.wguo64.module_oauth2.utilities.Constants;
 
 public class LoginActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
