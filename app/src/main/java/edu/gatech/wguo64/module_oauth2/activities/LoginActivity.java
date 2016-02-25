@@ -25,7 +25,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     private SignInButton signInButton;
     public TextView txtLoginInfo;
 
-    public final static String TAG = "LoginActivity";
+    public final static String TAG = LoginActivity.class.getName();
 
     private final static int RC_SIGN_IN = 1000;
 
